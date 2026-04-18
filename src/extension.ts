@@ -1,18 +1,35 @@
 import * as vscode from 'vscode';
 
-function renumberGCode(text: string): string {
-    const config = vscode.workspace.getConfiguration('renumber-tools');
+function normalizeDescription(description: string): string {
+    return description.toLowerCase().replace(/\s+/g, ' ').trim();
+}
 
+interface RenumberResult {
+    text: string;
+    missingDescriptions: string[];
+}
+
+function renumberGCode(text: string): RenumberResult {
+    const config = vscode.workspace.getConfiguration('renumber-tools');
     const shopToolList = config.get<any[]>('shopToolList') || [];
 
     const shopStandard: { [description: string]: number } = {};
+    const shopDescriptions = new Set<string>();
+
     shopToolList.forEach(item => {
-        if (item.description && item.toolNumber !== undefined) {
-            const key = item.description.toLowerCase().replace(/\s+/g, ' ').trim();
-            shopStandard[key] = Number(item.toolNumber);
+        if (item.description) {
+            const key = normalizeDescription(item.description);
+            shopDescriptions.add(key);
+            if (item.toolNumber !== undefined && item.toolNumber !== null && item.toolNumber !== '') {
+                const num = Number(item.toolNumber);
+                if (!Number.isNaN(num)) {
+                    shopStandard[key] = num;
+                }
+            }
         }
     });
 
+    const missingDescriptions = new Set<string>();
     const lines = text.split(/\r?\n/);
     const toolMap: { [legacy: string]: number } = {};
 
@@ -21,16 +38,20 @@ function renumberGCode(text: string): string {
     lines.forEach(line => {
         for (const match of line.matchAll(toolDefRegex)) {
             const legacyNum = match[1];
-            const description = match[2].toLowerCase().trim();
+            const rawDescription = match[2].replace(/\s+/g, ' ').trim();
+            const description = normalizeDescription(rawDescription);
             if (shopStandard[description] !== undefined) {
                 toolMap[legacyNum] = shopStandard[description];
+            } else if (!shopDescriptions.has(description)) {
+                missingDescriptions.add(rawDescription);
+                shopDescriptions.add(description);
             }
         }
     });
 
     const allNums = Object.keys(toolMap);
     if (allNums.length === 0) {
-        return text;
+        return { text, missingDescriptions: Array.from(missingDescriptions) };
     }
 
     const numPattern = allNums
@@ -46,11 +67,24 @@ function renumberGCode(text: string): string {
         })
     );
 
-    return outLines.join('\n');
+    return { text: outLines.join('\n'), missingDescriptions: Array.from(missingDescriptions) };
 }
 
 function sortToolList(toolList: any[]): any[] {
-    return toolList.slice().sort((a, b) => a.toolNumber - b.toolNumber);
+    return toolList.slice().sort((a, b) => {
+        const aNum = Number(a.toolNumber);
+        const bNum = Number(b.toolNumber);
+        if (Number.isNaN(aNum) && Number.isNaN(bNum)) {
+            return 0;
+        }
+        if (Number.isNaN(aNum)) {
+            return 1;
+        }
+        if (Number.isNaN(bNum)) {
+            return -1;
+        }
+        return aNum - bNum;
+    });
 }
 
 function escapeHtml(str: string): string {
@@ -185,13 +219,35 @@ export function activate(context: vscode.ExtensionContext) {
         const targetRange = selection && !selection.isEmpty ? selection : fullRange;
         const text = document.getText(targetRange);
 
-        const newText = renumberGCode(text);
+        const result = renumberGCode(text);
+        const newText = result.text;
+
+        if (result.missingDescriptions.length > 0) {
+            const config = vscode.workspace.getConfiguration('renumber-tools');
+            const shopToolList = config.get<any[]>('shopToolList') || [];
+            const updatedToolList = [
+                ...shopToolList,
+                ...result.missingDescriptions.map(description => ({ description, toolNumber: 0 }))
+            ];
+            const sortedToolList = sortToolList(updatedToolList);
+            await config.update('shopToolList', sortedToolList, vscode.ConfigurationTarget.Global);
+        }
 
         await editor.edit(editBuilder => {
             editBuilder.replace(targetRange, newText);
         });
 
-        vscode.window.showInformationMessage('Renumbering complete.');
+        const messages = [];
+        if (result.missingDescriptions.length > 0) {
+            messages.push(`Added ${result.missingDescriptions.length} new description(s) to the tool list.`);
+        }
+        if (newText !== text) {
+            messages.push('Renumbering complete.');
+        } else if (result.missingDescriptions.length === 0) {
+            messages.push('No matching tool descriptions were found to renumber.');
+        }
+
+        vscode.window.showInformationMessage(messages.join(' '));
     });
 
     context.subscriptions.push(renumberDisposable);

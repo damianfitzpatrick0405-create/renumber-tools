@@ -17,7 +17,7 @@ The editor displays all your tools in a table. From here you can:
 
 2-IT SHOULD IGNORE THESE CARACTERS /\(\s*T\s*(\d+)\s*\|?\s*([^|)\n]+)/gi
 
-3 If no tool descriptions in the file match your shop tool list, the file is left unchanged
+3 If no tool descriptions in the file match your shop tool list, the file is left unchanged. If a tool description is not on the tool list it is automaticly added with a tool number of 0.
 
 4 Only `T`, `H`, and `D` prefixed numbers are replaced — other numbers in the program are not touched
 
