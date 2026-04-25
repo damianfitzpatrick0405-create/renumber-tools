@@ -184,7 +184,7 @@ export function activate(context: vscode.ExtensionContext) {
         const panel = vscode.window.createWebviewPanel(
             'toolList',
             'Tool List Editor',
-            vscode.ViewColumn.One,
+            vscode.ViewColumn.Two,
             { enableScripts: true }
         );
 

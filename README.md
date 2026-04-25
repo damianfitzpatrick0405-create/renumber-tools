@@ -1,27 +1,34 @@
 # renumber-tools README
 
-VS code extension for renumbering tools in NC programs in a cnc machine shop enviorment. It refrences a master list of all tool descriptions that have ever been used in legacy programs. 
+VS code extension for renumbering tools in NC programs in a cnc machine shop enviorment. It CREATES AND refrences a master list of all tool descriptions that have ever been used in legacy programs. 
 
-TO USE Open those legacy programs, Right click, click on "renumber tools to master list" It will change all of the T, H and D values accociated with the tools to match the tool decription in the header(refrencing a master tool list of tool descriptions and the tool number you would like them to be).
+TO EDIT TOOL NUMBERS
+1- Open those legacy programs,
+2- Right click,
+3- click on "renumber tools to master list"
+ It will change all of the T, H and D values accociated with the tools to match the tool decription in the header(refrencing a master tool list of tool descriptions and the tool number you would like them to be).
+4-THE TOOL LIST IS ACCESED BY 
+1-RIGHT CLICK 
+2-EDIT TOOL LIST
 
 ## Features
 
-1-To edit the tool list right click, edit tool list. You should add all of the ways that you ever wrote the tool description.
+1-THE TOOL LIST IS BUILT OVER TIME, AS YOU EDIT PROGRAMS 
 
-The editor displays all your tools in a table. From here you can:
+2- If no tool descriptions in the file match your shop tool list, the file is left unchanged. If a tool description is not on the tool list it is automaticly added with a tool number of 0.
+
+3-The editor displays all your tools in a table. From here you can:
  
-- **Edit** any description or tool number inline
+- **Edit** any description or tool number
 - **Add** a new tool with the `+ Add Tool` button
 - **Remove** a tool with the `✕` button on that row
 - **Save** with the 💾 Save button — the list will automatically sort by tool number and update your settings
 
-2-IT SHOULD IGNORE THESE CARACTERS /\(\s*T\s*(\d+)\s*\|?\s*([^|)\n]+)/gi
+4-IT SHOULD IGNORE THESE CARACTERS /\(\s*T\s*(\d+)\s*\|?\s*([^|)\n]+)/gi
 
-3 If no tool descriptions in the file match your shop tool list, the file is left unchanged. If a tool description is not on the tool list it is automaticly added with a tool number of 0.
+5- Only `T`, `H`, and `D` prefixed numbers are replaced — other numbers in the program are not touched
 
-4 Only `T`, `H`, and `D` prefixed numbers are replaced — other numbers in the program are not touched
-
-5 The extension replaces tools across the entire file in a single pass, so there is no risk of a renumbered value being incorrectly renumbered again
+6- The extension replaces tools across the entire file in a single pass, so there is no risk of a renumbered value being incorrectly renumbered again
 
 \!\[feature X\]\(images/feature-x.png\)
 
@@ -50,18 +57,18 @@ If the same tool might be written different ways across programs, add multiple e
 { "description": "SPOT DRILL 3/8", "toolNumber": 2 },
 ```
  
-All three will map to tool number 2.
+All three map to tool number 2.
  
 ---
  
 
 ## Requirements
 
-You will need an NC file that needs to be changed and it needs a tool list. SIMILAR TO THIS
-4	(T1 3/8" Flat Endmill 4 FLUTE)
-5	(T2 #16 DRILL)
-6	(T3 5/16" DIA X 45 DEG X 4 FLUTE CHAMFER MILL)
-7	(T4 3/16" Flat Endmill)
+You will need an NC file that needs to be changed, and it needs a tool list WITH A T# IN PERENTHESES. SIMILAR TO THIS
+	(T1 3/8" Flat Endmill 4 FLUTE)
+	(T2 #16 DRILL)
+	(T3 5/16" DIA X 45 DEG X 4 FLUTE CHAMFER MILL)
+	(T4 3/16" Flat Endmill)
 
 ## Extension Settings
 
@@ -71,7 +78,7 @@ Include if your extension adds any VS Code settings through the `contributes.con
 This extension contributes the following settings:
 
 * `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `myExtension.shop tool list`: edit the shop tool list via code
 
 ## Known Issues
 
