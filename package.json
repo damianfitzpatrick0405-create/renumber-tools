@@ -43,7 +43,7 @@
           "description": "List of shop tool descriptions and their standard numbers.",
           "default": [
             { "description": "2.5\" DIA FACE MILL", "toolNumber": 1 },
-            { "description": "2\" DIA FACE MILL WITH OCTAGONAL INSERTS", "toolNumber": 1 },
+            { "description": "2\" DIA FACE MILL WITH OCTAGONAL INSERTS", "toolNumber": 2 },
             { "description": "3/8\" Spot Drill", "toolNumber": 2 },
             { "description": "3/8\" Flat Endmill 4 FLUTE", "toolNumber": 4 },
             { "description": "5/16\" DIA X 45 DEG X 4 FLUTE CHAMFER MILL", "toolNumber": 3 },
